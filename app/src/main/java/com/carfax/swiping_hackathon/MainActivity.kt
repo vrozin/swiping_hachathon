@@ -4,14 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +22,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,16 +37,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -62,7 +60,6 @@ import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.FractionalThreshold
 import androidx.wear.compose.material.rememberSwipeableState
 import androidx.wear.compose.material.swipeable
-import com.carfax.swiping_hackathon.MainActivityViewModel.Companion.VEHICLES
 import com.carfax.swiping_hackathon.ui.theme.SwipingHackathonTheme
 import kotlinx.coroutines.launch
 
@@ -105,12 +102,11 @@ fun ScreenContent(
 		) {
 			items(viewModel.vehicleList.value) { vehicleToRender ->
 				var shouldAnimateVisibility by remember { mutableStateOf(true) }
-
 				AnimatedVisibility(
 					visible = shouldAnimateVisibility,
 					exit = slideOutVertically() + fadeOut()
 				) {
-					Column() {
+					Column {
 						VehicleItem(
 							vehicleName = vehicleToRender.ymm,
 							onVehicleRemove = { extraTaskToRun ->
@@ -213,15 +209,29 @@ fun DeleteButtonLayout(
 	size: Dp = 90.dp,
 	onDeleteClick: () -> Unit = {}
 ) {
+	val sizePx = with(LocalDensity.current) { (size + 20.dp).toPx() }
+
 	Surface(
-		modifier = modifier.requiredSize(width = size + 20.dp, height = size),
-		shape = RoundedCornerShape(15.dp),
-		color = Color.Red.copy(alpha = 0.7f),
+		modifier = modifier
+			.requiredSize(width = size + 20.dp, height = size),
+		shape = RoundedCornerShape(15.dp)
 	) {
-		Box(contentAlignment = Alignment.Center) {
+		Box(
+			modifier = Modifier.background(
+				brush = Brush.linearGradient(
+					listOf(Color.Transparent, Color(0xFFFF3632)),
+					start = Offset(0f, 0f),
+					end = Offset(sizePx, 0f),
+					tileMode = TileMode.Clamp
+				)
+			),
+			contentAlignment = Alignment.Center
+		) {
 			IconButton(
 				onClick = onDeleteClick,
-				modifier = Modifier.sizeIn(minWidth = 48.dp),
+				modifier = Modifier
+					.sizeIn(minWidth = 48.dp)
+					.background(color = Color.Transparent),
 				content = {
 					Image(
 						painter = painterResource(id = R.drawable.baseline_delete_24),
